@@ -85,11 +85,27 @@ class _LoginScreenState extends State<LoginScreen> {
             child: ListView(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
               children: [
-                Text('Sugar', style: theme.textTheme.headlineMedium),
+                Center(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                        color: palette.lime, shape: BoxShape.circle),
+                    child: const SizedBox(
+                      width: 72,
+                      height: 72,
+                      child: Icon(Icons.water_drop_rounded, size: 34),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 18),
+                Text('Sugar',
+                    style: theme.textTheme.headlineMedium,
+                    textAlign: TextAlign.center),
                 const SizedBox(height: 8),
                 Text(
                   'A daily sugar limit, with calories kept in the background.',
-                  style: theme.textTheme.bodyLarge?.copyWith(color: palette.muted),
+                  style:
+                      theme.textTheme.bodyLarge?.copyWith(color: palette.muted),
+                  textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 32),
                 TextField(
@@ -134,14 +150,16 @@ class _LoginScreenState extends State<LoginScreen> {
                 TextButton(
                   key: Key(_creating ? 'go-sign-in' : 'go-register'),
                   onPressed: _busy ? null : _toggleMode,
-                  child: Text(_creating ? 'Already have an account' : 'Create account'),
+                  child: Text(
+                      _creating ? 'Already have an account' : 'Create account'),
                 ),
                 if (_error != null) ...[
                   const SizedBox(height: 8),
                   Text(
                     _error!,
                     key: Key(_creating ? 'register-error' : 'login-error'),
-                    style: theme.textTheme.bodyMedium?.copyWith(color: palette.over),
+                    style: theme.textTheme.bodyMedium
+                        ?.copyWith(color: palette.over),
                   ),
                 ],
                 const SizedBox(height: 28),
@@ -154,7 +172,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   Text(
                     widget.model.apiBaseUrl,
                     key: const Key('api-base-url'),
-                    style: theme.textTheme.bodySmall?.copyWith(color: palette.muted),
+                    style: theme.textTheme.bodySmall
+                        ?.copyWith(color: palette.muted),
                   ),
                 ],
               ],

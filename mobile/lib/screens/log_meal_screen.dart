@@ -34,7 +34,8 @@ class _LogMealScreenState extends State<LogMealScreen> {
   Future<void> _pickPhoto() async {
     final picker = widget.pickPhoto;
     if (picker == null) {
-      setState(() => _error = 'Photo library is unavailable. Enter a hint instead.');
+      setState(
+          () => _error = 'Photo library is unavailable. Enter a hint instead.');
       return;
     }
     try {
@@ -47,7 +48,10 @@ class _LogMealScreenState extends State<LogMealScreen> {
     } on ApiException catch (error) {
       if (mounted) setState(() => _error = error.message);
     } catch (_) {
-      if (mounted) setState(() => _error = 'Photo library is unavailable. Enter a hint instead.');
+      if (mounted) {
+        setState(() =>
+            _error = 'Photo library is unavailable. Enter a hint instead.');
+      }
     }
   }
 
@@ -82,7 +86,8 @@ class _LogMealScreenState extends State<LogMealScreen> {
   Future<void> _confirm({String? fraction}) async {
     final result = _result;
     if (result == null || _busy) return;
-    final sugar = fraction == null ? result.sugarG : result.fractionSugarG[fraction];
+    final sugar =
+        fraction == null ? result.sugarG : result.fractionSugarG[fraction];
     final kcal = fraction == null ? result.kcal : result.fractionKcal[fraction];
     if (sugar == null || kcal == null) {
       setState(() => _error = 'That portion is missing from the estimate.');
@@ -154,7 +159,8 @@ class _LogMealScreenState extends State<LogMealScreen> {
                       width: 48,
                       height: 48,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => const SizedBox(width: 48, height: 48),
+                      errorBuilder: (context, error, stackTrace) =>
+                          const SizedBox(width: 48, height: 48),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -223,7 +229,8 @@ class _LogMealScreenState extends State<LogMealScreen> {
                 key: const Key('within-budget'),
                 color: palette.under,
                 title: 'Within your sugar budget',
-                body: '${formatSugar(result.sugarG)} fits in the ${formatSugar(result.remainingBudgetG)} left.',
+                body:
+                    '${formatSugar(result.sugarG)} fits in the ${formatSugar(result.remainingBudgetG)} left.',
               ),
             if (result.wouldExceed && result.alternatives.isNotEmpty) ...[
               const SizedBox(height: 20),
@@ -236,15 +243,18 @@ class _LogMealScreenState extends State<LogMealScreen> {
                     for (var i = 0; i < result.alternatives.length; i++) ...[
                       if (i > 0) Divider(height: 1, color: palette.border),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 12),
                         child: Row(
                           children: [
                             Expanded(child: Text(result.alternatives[i].label)),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
-                                Text(formatSugar(result.alternatives[i].sugarG)),
-                                Text(formatKcal(result.alternatives[i].kcal), style: theme.textTheme.bodySmall),
+                                Text(
+                                    formatSugar(result.alternatives[i].sugarG)),
+                                Text(formatKcal(result.alternatives[i].kcal),
+                                    style: theme.textTheme.bodySmall),
                               ],
                             ),
                           ],
@@ -328,16 +338,16 @@ class _Notice extends StatelessWidget {
     final theme = Theme.of(context);
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color, width: 1),
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(22),
       ),
       child: Padding(
         padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: theme.textTheme.titleMedium?.copyWith(color: color)),
+            Text(title,
+                style: theme.textTheme.titleMedium?.copyWith(color: color)),
             const SizedBox(height: 4),
             Text(body, style: theme.textTheme.bodyMedium),
           ],
