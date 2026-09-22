@@ -4,19 +4,38 @@ publish_to: "none"
 version: 0.4.0+1
 
 environment:
-  sdk: ^3.13.4
+  # Flutter 3.35.4 ships Dart 3.9.2. Keep this below 3.10 so pub get
+  # does not select packages that require a newer SDK.
+  sdk: ">=3.5.0 <4.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  http: ^1.5.0
-  image_picker: ^1.2.0
-  shared_preferences: ^2.5.3
+  http: ^1.4.0
+  # 1.2.3 requires Dart >=3.10. 1.2.2 is the newest release for Dart 3.9.
+  image_picker: ">=1.2.2 <1.2.3"
+  # Stay on 2.5.3 so resolution does not float to plugin builds that need Dart >=3.10.
+  shared_preferences: ">=2.5.3 <2.5.4"
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  # 6.0.0 allows Dart 3.8+, including 3.9.2.
   flutter_lints: ^6.0.0
+
+# These releases sit inside the caret ranges above but require Dart >=3.10
+# or >=3.12. Pin the newest build that still accepts Dart 3.9.
+dependency_overrides:
+  cross_file: 0.3.5+2
+  file_selector_linux: 0.9.4
+  file_selector_macos: 0.9.5
+  file_selector_windows: 0.9.3+5
+  flutter_plugin_android_lifecycle: 2.0.34
+  image_picker_android: 0.8.13+17
+  image_picker_ios: 0.8.13+3
+  shared_preferences_android: 2.4.23
+  shared_preferences_foundation: 2.5.6
+  win32: 5.15.0
 
 flutter:
   uses-material-design: true

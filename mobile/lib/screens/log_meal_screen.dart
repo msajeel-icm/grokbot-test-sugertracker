@@ -154,7 +154,7 @@ class _LogMealScreenState extends State<LogMealScreen> {
                       width: 48,
                       height: 48,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) => const SizedBox(width: 48, height: 48),
+                      errorBuilder: (context, error, stackTrace) => const SizedBox(width: 48, height: 48),
                     ),
                   ),
                   const SizedBox(width: 12),
