@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.config import get_settings
-from app.database import SessionLocal
+from app.database import SessionLocal, ensure_meal_kcal_column
 from app.models import User
 from app.security import hash_password
 
@@ -40,6 +40,7 @@ def main() -> None:
     from app.database import Base, engine
 
     Base.metadata.create_all(bind=engine)
+    ensure_meal_kcal_column()
     seed_demo_user()
 
 

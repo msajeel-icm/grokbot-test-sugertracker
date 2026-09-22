@@ -1,6 +1,20 @@
 from fastapi.testclient import TestClient
 
 
+def test_cors_allows_a_local_web_client(client: TestClient) -> None:
+    response = client.options(
+        "/api/v1/auth/login",
+        headers={
+            "Origin": "http://localhost:8080",
+            "Access-Control-Request-Method": "POST",
+            "Access-Control-Request-Headers": "authorization,content-type",
+        },
+    )
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == "*"
+    assert "POST" in response.headers["access-control-allow-methods"]
+
+
 def test_health(client: TestClient) -> None:
     for path in ("/health", "/api/v1/health"):
         response = client.get(path)

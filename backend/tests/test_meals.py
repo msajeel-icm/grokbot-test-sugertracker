@@ -57,12 +57,18 @@ def test_budget_math_ignores_discarded_meals(client: TestClient) -> None:
     body = under.json()
     assert body["label"] == "chocolate chip cookie"
     assert body["sugar_g"] == 12
+    assert body["kcal"] == 160
     assert body["remaining_budget_g"] == 15
     assert body["would_exceed"] is False
     assert body["suggestion"]["fractions"] == ["1/3", "1/2"]
+    assert body["suggestion"]["fraction_kcal"]["1/3"] == 53.33
+    assert body["suggestion"]["fraction_kcal"]["1/2"] == 80
     assert len(body["suggestion"]["alternatives"]) >= 2
+    chicken = next(item for item in body["suggestion"]["alternatives"] if item["label"] == "grilled chicken")
+    assert chicken["sugar_g"] == 0
+    assert chicken["kcal"] == 165
 
-    _log(client, headers, sugar_g=10, label="yogurt", local_date=today.isoformat())
+    _log(client, headers, sugar_g=10, kcal=80, label="yogurt", local_date=today.isoformat())
 
     over = client.post("/api/v1/meals/analyze", headers=headers, json={"hint": "cookie"})
     assert over.status_code == 200, over.text
@@ -75,8 +81,10 @@ def test_budget_math_ignores_discarded_meals(client: TestClient) -> None:
 
     dashboard = client.get("/api/v1/dashboard", headers=headers).json()
     assert dashboard["consumed_g"] == 10
+    assert dashboard["consumed_kcal"] == 80
     assert dashboard["remaining_g"] == 5
     assert dashboard["limit_g"] == 15
+    assert dashboard["meals"][0]["kcal"] == 80
 
 
 def test_fraction_sugar_on_analyze(client: TestClient) -> None:
@@ -84,12 +92,19 @@ def test_fraction_sugar_on_analyze(client: TestClient) -> None:
     response = client.post("/api/v1/meals/analyze", headers=headers, json={"hint": "cookie"})
     body = response.json()
     sugar = body["sugar_g"]
+    kcal = body["kcal"]
     portions = body["suggestion"]["fraction_sugar_g"]
+    kcal_portions = body["suggestion"]["fraction_kcal"]
     assert body["suggestion"]["fractions"] == ["1/3", "1/2"]
     assert portions["1/3"] == round(sugar / 3, 2)
     assert portions["1/2"] == round(sugar / 2, 2)
     assert portions["1/3"] == 4
     assert portions["1/2"] == 6
+    assert kcal == 160
+    assert kcal_portions["1/3"] == round(kcal / 3, 2)
+    assert kcal_portions["1/2"] == round(kcal / 2, 2)
+    assert kcal_portions["1/3"] == 53.33
+    assert kcal_portions["1/2"] == 80
 
     meals = client.get("/api/v1/meals", headers=headers, params={"date": user_local_today("UTC").isoformat()})
     assert meals.json() == []
@@ -100,19 +115,22 @@ def test_logging_updates_consumed_and_locks_local_date(client: TestClient) -> No
     today = user_local_today("UTC")
     other = "2024-02-29"
 
-    first = _log(client, headers, sugar_g=6, label="oatmeal", notes="breakfast")
+    first = _log(client, headers, sugar_g=6, kcal=150, label="oatmeal", notes="breakfast")
     assert first["local_date"] == today.isoformat()
     assert first["status"] == "logged"
     assert first["notes"] == "breakfast"
+    assert first["kcal"] == 150
     assert first["logged_at"].endswith("Z")
 
-    second = _log(client, headers, sugar_g=2.5, label="berries")
+    second = _log(client, headers, sugar_g=2.5, kcal=40, label="berries")
     assert second["local_date"] == today.isoformat()
+    assert second["kcal"] == 40
 
     locked = _log(
         client,
         headers,
         sugar_g=3,
+        kcal=95,
         label="apple",
         local_date=other,
         photo_ref="photos/apple.jpg",
@@ -121,10 +139,12 @@ def test_logging_updates_consumed_and_locks_local_date(client: TestClient) -> No
     assert locked["local_date"] == other
     assert locked["photo_path_or_url"] == "photos/apple.jpg"
     assert locked["notes"] == "small"
+    assert locked["kcal"] == 95
 
     dashboard = client.get("/api/v1/dashboard", headers=headers).json()
     assert dashboard["date"] == today.isoformat()
     assert dashboard["consumed_g"] == 8.5
+    assert dashboard["consumed_kcal"] == 190
     assert dashboard["remaining_g"] == 6.5
     assert [meal["label"] for meal in dashboard["meals"]] == ["oatmeal", "berries"]
 
@@ -159,6 +179,7 @@ def test_analyze_image_is_deterministic_and_hint_wins(client: TestClient) -> Non
     )
     assert hinted.json()["label"] == "cucumber"
     assert hinted.json()["sugar_g"] == 1.7
+    assert hinted.json()["kcal"] == 16
     assert hinted.json()["would_exceed"] is False
 
 
@@ -186,8 +207,10 @@ def test_streak_increment_break_and_best_preserved(client: TestClient) -> None:
     assert dashboard["current_streak"] == 0
     assert dashboard["best_streak"] == 3
     assert dashboard["consumed_g"] == 40
+    assert dashboard["consumed_kcal"] == 0
     assert dashboard["remaining_g"] == -25
     assert len(dashboard["meals"]) == 1
+    assert dashboard["meals"][0]["kcal"] == 0
 
     untouched = client.get("/api/v1/me", headers=other).json()
     assert untouched["current_streak"] == 0
@@ -202,6 +225,61 @@ def test_meals_are_scoped_to_the_current_user(client: TestClient) -> None:
     listed = client.get("/api/v1/meals", headers=other, params={"date": today.isoformat()})
     assert listed.json() == []
     assert client.get("/api/v1/dashboard", headers=other).json()["consumed_g"] == 0
+
+
+def test_kcal_is_stored_but_sugar_alone_gates_the_budget(client: TestClient) -> None:
+    headers = _headers(client)
+    today = user_local_today("UTC")
+
+    logged = _log(
+        client,
+        headers,
+        sugar_g=15,
+        kcal=999,
+        label="full sugar day",
+        local_date=today.isoformat(),
+    )
+    assert logged["kcal"] == 999
+    assert logged["sugar_g"] == 15
+
+    listed = client.get("/api/v1/meals", headers=headers, params={"date": today.isoformat()}).json()
+    assert listed[0]["kcal"] == 999
+
+    chicken = client.post("/api/v1/meals/analyze", headers=headers, json={"hint": "chicken"})
+    assert chicken.status_code == 200, chicken.text
+    chicken_body = chicken.json()
+    assert chicken_body["label"] == "grilled chicken"
+    assert chicken_body["sugar_g"] == 0
+    assert chicken_body["kcal"] == 165
+    assert chicken_body["remaining_budget_g"] == 0
+    assert chicken_body["would_exceed"] is False
+    assert chicken_body["suggestion"]["fraction_sugar_g"] == {"1/3": 0, "1/2": 0}
+    assert chicken_body["suggestion"]["fraction_kcal"]["1/3"] == 55
+    assert chicken_body["suggestion"]["fraction_kcal"]["1/2"] == 82.5
+
+    cookie = client.post("/api/v1/meals/analyze", headers=headers, json={"hint": "cookie"})
+    cookie_body = cookie.json()
+    assert cookie_body["kcal"] == 160
+    assert cookie_body["sugar_g"] == 12
+    assert cookie_body["would_exceed"] is True
+    assert cookie_body["remaining_budget_g"] == 0
+
+    portion = _log(
+        client,
+        headers,
+        sugar_g=cookie_body["suggestion"]["fraction_sugar_g"]["1/3"],
+        kcal=cookie_body["suggestion"]["fraction_kcal"]["1/3"],
+        label="1/3 chocolate chip cookie",
+        local_date=today.isoformat(),
+    )
+    assert portion["sugar_g"] == 4
+    assert portion["kcal"] == 53.33
+
+    dashboard = client.get("/api/v1/dashboard", headers=headers).json()
+    assert dashboard["consumed_g"] == 19
+    assert dashboard["consumed_kcal"] == 1052.33
+    assert dashboard["remaining_g"] == -4
+    assert [meal["kcal"] for meal in dashboard["meals"]] == [999, 53.33]
 
 
 def test_invalid_meal_date_is_rejected(client: TestClient) -> None:
