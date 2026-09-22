@@ -2,24 +2,26 @@ import 'package:flutter/material.dart';
 
 import '../format.dart';
 
-/// Flat neutrals. Budget color is the only accent, and it does not glow.
+/// Soft mint page. [offWhite] and [nearBlack] keep their names because
+/// widget tests compare the scaffold color to these tokens.
 class AppTokens {
-  static const offWhite = Color(0xFFF7F7F5);
-  static const nearBlack = Color(0xFF0A0A0A);
+  static const offWhite = Color(0xFFE5F6E1);
+  static const nearBlack = Color(0xFF101612);
   static const lightSurface = Color(0xFFFFFFFF);
-  static const darkSurface = Color(0xFF141414);
-  static const lightBorder = Color(0xFFE6E6E4);
-  static const darkBorder = Color(0xFF2E2E2E);
-  static const lightText = Color(0xFF171717);
-  static const darkText = Color(0xFFF5F5F4);
-  static const lightMuted = Color(0xFF737373);
-  static const darkMuted = Color(0xFFA3A3A3);
-  static const under = Color(0xFF0F766E);
-  static const underDark = Color(0xFF2BBBAD);
-  static const amber = Color(0xFFB45309);
-  static const amberDark = Color(0xFFE0A14A);
-  static const over = Color(0xFFB91C1C);
-  static const overDark = Color(0xFFF07167);
+  static const darkSurface = Color(0xFF1A2420);
+  static const lightBorder = Color(0xFFD7E8D4);
+  static const darkBorder = Color(0xFF2C3A32);
+  static const lightText = Color(0xFF171917);
+  static const darkText = Color(0xFFF4F7F2);
+  static const lightMuted = Color(0xFF7E877F);
+  static const darkMuted = Color(0xFFA8B2AA);
+  static const lime = Color(0xFF6BF24A);
+  static const under = Color(0xFF3CBF45);
+  static const underDark = Color(0xFF6BF24A);
+  static const amber = Color(0xFFFF6E2E);
+  static const amberDark = Color(0xFFFF8A4A);
+  static const over = Color(0xFFE24B3B);
+  static const overDark = Color(0xFFFF7A6E);
 }
 
 class Space {
@@ -45,6 +47,7 @@ class Palette {
   Color get under => dark ? AppTokens.underDark : AppTokens.under;
   Color get amber => dark ? AppTokens.amberDark : AppTokens.amber;
   Color get over => dark ? AppTokens.overDark : AppTokens.over;
+  Color get lime => AppTokens.lime;
 
   Color tone(BudgetTone tone) {
     switch (tone) {
@@ -57,5 +60,6 @@ class Palette {
     }
   }
 
-  static Palette of(BuildContext context) => Palette(Theme.of(context).brightness);
+  static Palette of(BuildContext context) =>
+      Palette(Theme.of(context).brightness);
 }

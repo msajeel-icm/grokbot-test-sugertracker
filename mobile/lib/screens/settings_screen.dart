@@ -4,6 +4,7 @@ import '../api/sugar_api.dart';
 import '../format.dart';
 import '../state/app_model.dart';
 import '../theme/tokens.dart';
+import '../widgets/progress_ring.dart';
 import '../widgets/surface_card.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -25,7 +26,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void initState() {
     super.initState();
-    _timezone = TextEditingController(text: widget.model.user?.timezone ?? 'UTC');
+    _timezone =
+        TextEditingController(text: widget.model.user?.timezone ?? 'UTC');
   }
 
   @override
@@ -49,7 +51,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     } on ApiException catch (error) {
       if (mounted) setState(() => _timezoneError = error.message);
     } catch (_) {
-      if (mounted) setState(() => _timezoneError = "Couldn't update the timezone.");
+      if (mounted) {
+        setState(() => _timezoneError = "Couldn't update the timezone.");
+      }
     } finally {
       if (mounted) setState(() => _savingTimezone = false);
     }
@@ -87,10 +91,41 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final selected = model.user?.dailySugarLimitG;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: AppBar(title: const Text('Adjust Goals')),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
         children: [
+          SurfaceCard(
+            padding: const EdgeInsets.fromLTRB(16, 14, 14, 14),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Sugar goal', style: theme.textTheme.bodySmall),
+                      const SizedBox(height: 4),
+                      Text(
+                        selected == null ? '—' : formatSugar(selected),
+                        style: theme.textTheme.headlineMedium?.copyWith(
+                          fontFeatures: const [FontFeature.tabularFigures()],
+                        ),
+                      ),
+                      Text(
+                        'This limit gates the day. kcal does not.',
+                        style: theme.textTheme.bodySmall,
+                      ),
+                    ],
+                  ),
+                ),
+                ProgressRing(
+                    value: selected == null ? 0 : 0.78,
+                    color: palette.lime,
+                    size: 68),
+              ],
+            ),
+          ),
+          const SizedBox(height: 18),
           const SectionLabel('Daily sugar limit'),
           const SizedBox(height: 8),
           for (final preset in _presets) ...[
@@ -109,7 +144,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: Text(
                 _error!,
                 key: const Key('settings-error'),
-                style: theme.textTheme.bodyMedium?.copyWith(color: palette.over),
+                style:
+                    theme.textTheme.bodyMedium?.copyWith(color: palette.over),
               ),
             ),
           const SizedBox(height: 16),
@@ -117,16 +153,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 8),
           DecoratedBox(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: palette.border),
+              color: palette.surface,
+              borderRadius: BorderRadius.circular(22),
+              boxShadow: const [
+                BoxShadow(
+                    color: Color(0x14000000),
+                    blurRadius: 16,
+                    offset: Offset(0, 8)),
+              ],
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(7),
+              borderRadius: BorderRadius.circular(22),
               child: Row(
                 children: [
-                  _ThemeChoice(model: model, mode: ThemeMode.system, label: 'System', buttonKey: const Key('theme-system')),
-                  _ThemeChoice(model: model, mode: ThemeMode.light, label: 'Light', buttonKey: const Key('theme-light')),
-                  _ThemeChoice(model: model, mode: ThemeMode.dark, label: 'Dark', buttonKey: const Key('theme-dark')),
+                  _ThemeChoice(
+                      model: model,
+                      mode: ThemeMode.system,
+                      label: 'System',
+                      buttonKey: const Key('theme-system')),
+                  _ThemeChoice(
+                      model: model,
+                      mode: ThemeMode.light,
+                      label: 'Light',
+                      buttonKey: const Key('theme-light')),
+                  _ThemeChoice(
+                      model: model,
+                      mode: ThemeMode.dark,
+                      label: 'Dark',
+                      buttonKey: const Key('theme-dark')),
                 ],
               ),
             ),
@@ -143,7 +197,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             key: const Key('timezone-field'),
             controller: _timezone,
             autocorrect: false,
-            decoration: const InputDecoration(labelText: 'Timezone', hintText: 'UTC'),
+            decoration:
+                const InputDecoration(labelText: 'Timezone', hintText: 'UTC'),
           ),
           if (_timezoneError != null) ...[
             const SizedBox(height: 8),
@@ -168,7 +223,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             key: const Key('sign-out'),
             onPressed: () async {
               await model.logout();
-              if (context.mounted) Navigator.of(context).popUntil((route) => route.isFirst);
+              if (context.mounted) {
+                Navigator.of(context).popUntil((route) => route.isFirst);
+              }
             },
             child: const Text('Sign out'),
           ),
@@ -198,34 +255,35 @@ class _LimitRow extends StatelessWidget {
     final palette = Palette.of(context);
     final theme = Theme.of(context);
     return Material(
-      color: palette.surface,
-      borderRadius: BorderRadius.circular(10),
+      color: selected ? palette.lime : palette.surface,
+      borderRadius: BorderRadius.circular(22),
+      elevation: selected ? 0 : 1,
+      shadowColor: const Color(0x14000000),
       child: InkWell(
         key: Key('preset-${grams.toInt()}'),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(22),
         onTap: busy ? null : onTap,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: selected ? palette.text : palette.border, width: 1),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(formatSugar(grams), style: theme.textTheme.titleMedium),
-                      const SizedBox(height: 2),
-                      Text(caption, style: theme.textTheme.bodySmall),
-                    ],
-                  ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(formatSugar(grams),
+                        style: theme.textTheme.titleMedium),
+                    const SizedBox(height: 2),
+                    Text(caption, style: theme.textTheme.bodySmall),
+                  ],
                 ),
-                if (selected) Icon(Icons.check, size: 18, color: palette.text),
-              ],
-            ),
+              ),
+              if (selected)
+                ProgressRing(
+                    value: 0.78, color: palette.text, size: 36, stroke: 4)
+              else
+                Icon(Icons.chevron_right_rounded, color: palette.muted),
+            ],
           ),
         ),
       ),

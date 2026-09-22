@@ -6,7 +6,8 @@ ThemeData buildAppTheme(Brightness brightness) {
   final palette = Palette(brightness);
   final text = palette.text;
   final border = palette.border;
-  final radius = BorderRadius.circular(8);
+  final radius = BorderRadius.circular(18);
+  const ink = Color(0xFF171917);
 
   OutlineInputBorder outline(Color color) {
     return OutlineInputBorder(
@@ -59,15 +60,16 @@ ThemeData buildAppTheme(Brightness brightness) {
     highlightColor: Colors.transparent,
     hoverColor: palette.border.withValues(alpha: 0.35),
     textTheme: TextTheme(
-      headlineLarge: style(40, FontWeight.w600, height: 1.02, tracking: -1.4),
-      headlineMedium: style(28, FontWeight.w600, height: 1.1, tracking: -0.7),
-      titleLarge: style(20, FontWeight.w600, height: 1.2, tracking: -0.4),
-      titleMedium: style(16, FontWeight.w600, tracking: -0.2),
+      headlineLarge: style(40, FontWeight.w800, height: 1.02, tracking: -1.4),
+      headlineMedium: style(28, FontWeight.w800, height: 1.1, tracking: -0.7),
+      titleLarge: style(20, FontWeight.w700, height: 1.2, tracking: -0.4),
+      titleMedium: style(16, FontWeight.w700, tracking: -0.2),
       bodyLarge: style(16, FontWeight.w400),
       bodyMedium: style(14, FontWeight.w400),
       bodySmall: style(13, FontWeight.w400, color: palette.muted),
       labelLarge: style(14, FontWeight.w600, tracking: -0.1),
-      labelSmall: style(12, FontWeight.w600, tracking: 0.3, color: palette.muted),
+      labelSmall:
+          style(12, FontWeight.w600, tracking: 0.3, color: palette.muted),
     ),
     appBarTheme: AppBarTheme(
       elevation: 0,
@@ -80,21 +82,24 @@ ThemeData buildAppTheme(Brightness brightness) {
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
         elevation: 0,
-        backgroundColor: text,
-        foregroundColor: palette.background,
-        minimumSize: const Size.fromHeight(48),
-        shape: RoundedRectangleBorder(borderRadius: radius),
-        textStyle: style(15, FontWeight.w600, color: palette.background),
+        backgroundColor: AppTokens.lime,
+        foregroundColor: ink,
+        disabledBackgroundColor: AppTokens.lime.withValues(alpha: 0.45),
+        disabledForegroundColor: ink.withValues(alpha: 0.45),
+        minimumSize: const Size.fromHeight(54),
+        shape: const StadiumBorder(),
+        textStyle: style(16, FontWeight.w700, color: ink),
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         elevation: 0,
+        backgroundColor: palette.surface,
         foregroundColor: text,
-        minimumSize: const Size.fromHeight(48),
+        minimumSize: const Size.fromHeight(52),
         side: BorderSide(color: border),
-        shape: RoundedRectangleBorder(borderRadius: radius),
-        textStyle: style(15, FontWeight.w600),
+        shape: const StadiumBorder(),
+        textStyle: style(16, FontWeight.w700),
       ),
     ),
     textButtonTheme: TextButtonThemeData(

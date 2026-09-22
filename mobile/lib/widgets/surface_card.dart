@@ -18,8 +18,16 @@ class SurfaceCard extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: palette.surface,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: palette.border, width: 1),
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: [
+          BoxShadow(
+            color: palette.dark
+                ? const Color(0x66000000)
+                : const Color(0x14000000),
+            blurRadius: 28,
+            offset: const Offset(0, 12),
+          ),
+        ],
       ),
       child: Padding(padding: padding, child: child),
     );

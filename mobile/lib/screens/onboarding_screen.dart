@@ -58,11 +58,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             child: ListView(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
               children: [
-                Text('Set your daily limit', style: theme.textTheme.headlineMedium),
+                Text('Set your daily limit',
+                    style: theme.textTheme.headlineMedium),
                 const SizedBox(height: 8),
                 Text(
                   'Sugar is the only limit. 15 g matches the demo account. You can change this later.',
-                  style: theme.textTheme.bodyLarge?.copyWith(color: palette.muted),
+                  style:
+                      theme.textTheme.bodyLarge?.copyWith(color: palette.muted),
                 ),
                 const SizedBox(height: 28),
                 for (final grams in _presets) ...[
@@ -79,7 +81,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   Text(
                     _error!,
                     key: const Key('onboarding-error'),
-                    style: theme.textTheme.bodyMedium?.copyWith(color: palette.over),
+                    style: theme.textTheme.bodyMedium
+                        ?.copyWith(color: palette.over),
                   ),
                 ],
                 const SizedBox(height: 16),
@@ -119,21 +122,18 @@ class _Preset extends StatelessWidget {
   Widget build(BuildContext context) {
     final palette = Palette.of(context);
     return Material(
-      color: palette.surface,
-      borderRadius: BorderRadius.circular(10),
+      color: selected ? palette.lime : palette.surface,
+      borderRadius: BorderRadius.circular(22),
+      elevation: 1,
+      shadowColor: const Color(0x14000000),
       child: InkWell(
         key: Key('onboarding-${grams.toInt()}'),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(22),
         onTap: busy ? null : onTap,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: selected ? palette.text : palette.border),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            child: Text(formatSugar(grams), style: Theme.of(context).textTheme.titleMedium),
-          ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Text(formatSugar(grams),
+              style: Theme.of(context).textTheme.titleMedium),
         ),
       ),
     );
