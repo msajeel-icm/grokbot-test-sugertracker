@@ -5,7 +5,7 @@ from pathlib import Path
 
 _db_path = Path(tempfile.mkdtemp()) / "test.db"
 os.environ["DATABASE_URL"] = f"sqlite:///{_db_path}"
-os.environ["JWT_SECRET"] = "test-secret"
+os.environ["JWT_SECRET"] = "test-secret-key-at-least-32-bytes"
 
 import pytest
 from fastapi.testclient import TestClient

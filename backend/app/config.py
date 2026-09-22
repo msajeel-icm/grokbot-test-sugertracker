@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     )
 
     database_url: str = "sqlite:///./sugar.db"
-    jwt_secret: str = "dev-only-change-me"
+    jwt_secret: str = "dev-only-change-me-not-for-production-use"
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 60 * 24 * 7
 

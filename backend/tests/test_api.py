@@ -22,6 +22,7 @@ def test_demo_user_can_log_in(client: TestClient) -> None:
     assert body["user"]["timezone"] == "UTC"
     assert body["user"]["current_streak"] == 0
     assert body["user"]["best_streak"] == 0
+    assert body["user"]["created_at"].endswith("Z")
 
 
 def test_register_and_login(client: TestClient) -> None:
