@@ -1,3 +1,3 @@
-"""Sugar Tracker API (M1: auth and profile)."""
+"""Sugar Tracker API."""
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"

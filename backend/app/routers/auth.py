@@ -9,11 +9,11 @@ from app.security import create_access_token, hash_password, verify_password
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
 
-def _auth_response(user: User) -> AuthResponse:
+def _auth_response(user: User, db: DbSession) -> AuthResponse:
     return AuthResponse(
         access_token=create_access_token(user.id),
         token_type="bearer",
-        user=user_to_out(user),
+        user=user_to_out(user, db),
     )
 
 
@@ -27,7 +27,7 @@ def register(body: RegisterRequest, db: DbSession) -> AuthResponse:
     db.add(user)
     db.commit()
     db.refresh(user)
-    return _auth_response(user)
+    return _auth_response(user, db)
 
 
 @router.post("/login", response_model=AuthResponse)
@@ -39,4 +39,4 @@ def login(body: LoginRequest, db: DbSession) -> AuthResponse:
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",
         )
-    return _auth_response(user)
+    return _auth_response(user, db)
