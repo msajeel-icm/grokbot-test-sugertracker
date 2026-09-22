@@ -13,6 +13,8 @@ class FakeSugarApi implements SugarApi {
   int bestStreak = 0;
   String email = 'demo@sugar.app';
   String password = 'demo1234';
+  String timezone = 'UTC';
+  int registerCalls = 0;
 
   final List<Meal> meals = [];
   int logCalls = 0;
@@ -29,7 +31,7 @@ class FakeSugarApi implements SugarApi {
         id: 1,
         email: email,
         dailySugarLimitG: limit,
-        timezone: 'UTC',
+        timezone: timezone,
         currentStreak: currentStreak,
         bestStreak: bestStreak,
       );
@@ -52,6 +54,16 @@ class FakeSugarApi implements SugarApi {
   }
 
   @override
+  Future<UserProfile> register(String email, String password) async {
+    registerCalls += 1;
+    this.email = email;
+    this.password = password;
+    _token = 'new-token';
+    startLoggedIn = true;
+    return profile;
+  }
+
+  @override
   Future<void> logout() async {
     _token = null;
     startLoggedIn = false;
@@ -63,6 +75,15 @@ class FakeSugarApi implements SugarApi {
   @override
   Future<UserProfile> updateLimit(double dailySugarLimitG) async {
     limit = dailySugarLimitG;
+    return profile;
+  }
+
+  @override
+  Future<UserProfile> updateTimezone(String timezone) async {
+    if (timezone == 'Not/AZone') {
+      throw ApiException('Unknown IANA timezone', statusCode: 422);
+    }
+    this.timezone = timezone;
     return profile;
   }
 

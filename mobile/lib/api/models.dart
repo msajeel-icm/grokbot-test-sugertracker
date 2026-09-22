@@ -160,10 +160,20 @@ class Dashboard {
 }
 
 class MealPhoto {
-  const MealPhoto({required this.bytes, required this.name});
+  const MealPhoto({required this.bytes, required this.name, this.path});
 
   final List<int> bytes;
   final String name;
+
+  /// Device path stored as `photo_ref` when it fits. Analyze still sends bytes.
+  final String? path;
+}
+
+/// Confirm stores the device path only. A missing or oversized path is omitted.
+String? photoRefForLog(MealPhoto? photo) {
+  final path = photo?.path?.trim() ?? '';
+  if (path.isEmpty || path.length > 1024) return null;
+  return path;
 }
 
 class LoggedMeal {

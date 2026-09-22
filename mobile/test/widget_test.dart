@@ -266,4 +266,44 @@ void main() {
     expect(find.byKey(const Key('meals-empty')), findsOneWidget);
     expect(find.text('15 g left'), findsOneWidget);
   });
+
+  testWidgets('register requires a real password then sets a sugar limit', (tester) async {
+    final launched = await launch(tester);
+
+    await tester.tap(find.byKey(const Key('go-register')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('register-email')), 'new@sugar.app');
+    await tester.enterText(find.byKey(const Key('register-password')), 'short');
+    await tester.tap(find.byKey(const Key('register-submit')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('register-error')), findsOneWidget);
+    expect(find.text('Use at least 8 characters.'), findsOneWidget);
+    expect(launched.api.registerCalls, 0);
+
+    await tester.enterText(find.byKey(const Key('register-password')), 'password1');
+    await tester.tap(find.byKey(const Key('register-submit')));
+    await tester.pumpAndSettle();
+    expect(find.text('Set your daily limit'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('onboarding-25')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('onboarding-continue')));
+    await tester.pumpAndSettle();
+    expect(find.text('of 25 g'), findsOneWidget);
+    expect(launched.api.registerCalls, 1);
+    expect(launched.api.limit, 25);
+  });
+
+  testWidgets('settings saves an IANA timezone', (tester) async {
+    final launched = await launch(tester, api: FakeSugarApi(startLoggedIn: true));
+
+    await tester.tap(find.byKey(const Key('open-settings')));
+    await tester.pumpAndSettle();
+    await reveal(tester, find.byKey(const Key('timezone-field')));
+    await tester.enterText(find.byKey(const Key('timezone-field')), 'America/New_York');
+    await reveal(tester, find.byKey(const Key('save-timezone')));
+    await tester.tap(find.byKey(const Key('save-timezone')));
+    await tester.pumpAndSettle();
+    expect(launched.api.timezone, 'America/New_York');
+  });
 }

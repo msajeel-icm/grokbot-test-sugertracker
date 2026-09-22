@@ -110,7 +110,7 @@ flutter pub get
 flutter run --dart-define=API_BASE=http://127.0.0.1:8000
 ```
 
-Android allows cleartext HTTP so a local API works. Point `API_BASE` at an HTTPS host before any shared deploy. On a device or emulator, use the machine's LAN address instead of `127.0.0.1`.
+`API_BASE_URL` is the same override. With neither set, an Android emulator uses `http://10.0.2.2:8000` and every other target uses `http://127.0.0.1:8000`. The sign-in screen shows the URL in use. Android allows cleartext HTTP, and iOS allows local and arbitrary loads, so a local API works. Point the override at an HTTPS host before any shared deploy. A physical phone needs the computer's LAN address, with the API bound to `0.0.0.0`.
 
 ```bash
 cd mobile
@@ -119,10 +119,10 @@ flutter test
 
 Screens:
 
-- **Sign in.** Email and password. "Use demo account" fills the seeded credentials and still requires Sign in.
+- **Sign in / Create account.** Email and password. "Use demo account" fills the seeded credentials and still requires Sign in. A new account starts at 15 g and asks for a sugar limit before the home screen.
 - **Home.** Sugar ring (consumed vs daily limit), remaining sugar, kcal today as a smaller line, current and best streaks, today's meals (sugar primary, kcal under it), and Log meal.
 - **Log meal.** Hint and optional photo, then an estimate of sugar and kcal. If the full portion would exceed the sugar budget, a flat warning appears. Log full, 1/3, or 1/2 sends the scaled sugar and kcal. Cancel logs nothing.
-- **Settings.** Sugar-limit presets (10, 15, 25, 36, 50 g) and System / Light / Dark. Empty days and failed loads have their own copy and a retry.
+- **Settings.** Sugar-limit presets (10, 15, 25, 36, 50 g), an IANA timezone, and System / Light / Dark. Empty days and failed loads have their own copy and a retry. The session token is stored with shared preferences so the app still resolves on Dart 3.9.2.
 
 Visuals are near-black and off-white surfaces, 1 px borders, Inter, and one flat accent: teal under the sugar budget, amber at the limit, red over. There is no gradient or glow. Screenshots of light home, dark home, and the over-budget log step are attached on the pull request.
 

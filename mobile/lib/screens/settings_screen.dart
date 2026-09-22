@@ -16,8 +16,44 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  late final TextEditingController _timezone;
   bool _busy = false;
+  bool _savingTimezone = false;
   String? _error;
+  String? _timezoneError;
+
+  @override
+  void initState() {
+    super.initState();
+    _timezone = TextEditingController(text: widget.model.user?.timezone ?? 'UTC');
+  }
+
+  @override
+  void dispose() {
+    _timezone.dispose();
+    super.dispose();
+  }
+
+  Future<void> _saveTimezone() async {
+    final value = _timezone.text.trim();
+    if (value.isEmpty) {
+      setState(() => _timezoneError = 'Enter an IANA timezone, such as UTC.');
+      return;
+    }
+    setState(() {
+      _savingTimezone = true;
+      _timezoneError = null;
+    });
+    try {
+      await widget.model.setTimezone(value);
+    } on ApiException catch (error) {
+      if (mounted) setState(() => _timezoneError = error.message);
+    } catch (_) {
+      if (mounted) setState(() => _timezoneError = "Couldn't update the timezone.");
+    } finally {
+      if (mounted) setState(() => _savingTimezone = false);
+    }
+  }
 
   static const _presets = <(double, String)>[
     (10, 'Tight'),
@@ -94,6 +130,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ],
               ),
             ),
+          ),
+          const SizedBox(height: 28),
+          const SectionLabel('Timezone'),
+          const SizedBox(height: 8),
+          Text(
+            'Today’s dashboard uses this IANA timezone.',
+            style: theme.textTheme.bodyMedium?.copyWith(color: palette.muted),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            key: const Key('timezone-field'),
+            controller: _timezone,
+            autocorrect: false,
+            decoration: const InputDecoration(labelText: 'Timezone', hintText: 'UTC'),
+          ),
+          if (_timezoneError != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              _timezoneError!,
+              key: const Key('timezone-error'),
+              style: theme.textTheme.bodyMedium?.copyWith(color: palette.over),
+            ),
+          ],
+          const SizedBox(height: 12),
+          OutlinedButton(
+            key: const Key('save-timezone'),
+            onPressed: _savingTimezone ? null : _saveTimezone,
+            child: Text(_savingTimezone ? 'Saving…' : 'Save timezone'),
           ),
           const SizedBox(height: 28),
           const SectionLabel('Account'),

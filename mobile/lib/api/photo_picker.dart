@@ -13,7 +13,7 @@ Future<MealPhoto?> pickMealPhoto() async {
     if (file == null) return null;
     final bytes = await file.readAsBytes();
     if (bytes.isEmpty) return null;
-    return MealPhoto(bytes: bytes, name: file.name);
+    return MealPhoto(bytes: bytes, name: file.name, path: file.path);
   } catch (_) {
     throw ApiException('Photo library is unavailable. Enter a hint instead.');
   }

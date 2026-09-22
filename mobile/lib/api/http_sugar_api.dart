@@ -57,6 +57,23 @@ class HttpSugarApi implements SugarApi {
   }
 
   @override
+  Future<UserProfile> register(String email, String password) async {
+    final body = await _decode(
+      await _send(
+        http.Request('POST', _uri('/api/v1/auth/register'))
+          ..headers['Content-Type'] = 'application/json'
+          ..body = jsonEncode({'email': email, 'password': password}),
+      ),
+    );
+    final token = body['access_token'] as String?;
+    if (token == null || token.isEmpty) {
+      throw ApiException('Registration did not return a token.');
+    }
+    await store.write(_tokenKey, token);
+    return UserProfile.fromJson(body['user'] as Map<String, dynamic>);
+  }
+
+  @override
   Future<void> logout() => store.delete(_tokenKey);
 
   @override
@@ -70,6 +87,15 @@ class HttpSugarApi implements SugarApi {
     final request = _authed(http.Request('PATCH', _uri('/api/v1/me')))
       ..headers['Content-Type'] = 'application/json'
       ..body = jsonEncode({'daily_sugar_limit_g': dailySugarLimitG});
+    final body = await _decode(await _send(request));
+    return UserProfile.fromJson(body);
+  }
+
+  @override
+  Future<UserProfile> updateTimezone(String timezone) async {
+    final request = _authed(http.Request('PATCH', _uri('/api/v1/me')))
+      ..headers['Content-Type'] = 'application/json'
+      ..body = jsonEncode({'timezone': timezone});
     final body = await _decode(await _send(request));
     return UserProfile.fromJson(body);
   }
@@ -159,6 +185,7 @@ class HttpSugarApi implements SugarApi {
     final detail = body?['detail'];
     if (detail is String && detail.isNotEmpty) return detail;
     if (status == 401) return 'Those credentials did not match.';
+    if (status == 409) return 'Email already registered.';
     if (status == 422) return 'Check the values and try again.';
     return 'Something went wrong ($status).';
   }

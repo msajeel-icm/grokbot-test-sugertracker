@@ -98,7 +98,7 @@ class _LogMealScreenState extends State<LogMealScreen> {
         label: label,
         sugarG: sugar,
         kcal: kcal,
-        photoRef: _photo?.name,
+        photoRef: photoRefForLog(_photo),
       );
       if (!mounted) return;
       Navigator.of(context).pop(true);

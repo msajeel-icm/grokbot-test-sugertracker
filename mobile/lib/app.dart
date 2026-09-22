@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'api/models.dart';
 import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
+import 'screens/onboarding_screen.dart';
 import 'state/app_model.dart';
 import 'theme/app_theme.dart';
 
@@ -53,6 +54,7 @@ class _Root extends StatelessWidget {
       builder: (context, _) {
         if (!model.ready) return const _BootScreen();
         if (model.user == null) return LoginScreen(model: model);
+        if (model.needsOnboarding) return OnboardingScreen(model: model);
         return HomeScreen(model: model, pickPhoto: pickPhoto);
       },
     );
