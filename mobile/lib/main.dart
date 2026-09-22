@@ -1,17 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-import 'src/api/api_client.dart';
-import 'src/app.dart';
-import 'src/auth/session_controller.dart';
-import 'src/auth/token_store.dart';
-import 'src/config/api_config.dart';
+import 'api/http_sugar_api.dart';
+import 'api/photo_picker.dart';
+import 'app.dart';
+import 'config/api_config.dart';
+import 'state/app_model.dart';
+import 'state/key_value_store.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  final prefs = await SharedPreferences.getInstance();
+  final store = PrefsStore(prefs);
   final config = ApiConfig.fromEnvironment();
-  final session = SessionController(
-    api: ApiClient(baseUrl: config.baseUrl),
-    tokenStore: const SecureTokenStore(),
+  final model = AppModel(
+    api: HttpSugarApi(baseUrl: config.baseUrl, store: store),
+    store: store,
+    apiBaseUrl: config.baseUrl,
   );
-  runApp(SugarTrackerApp(session: session, apiBaseUrl: config.baseUrl));
+  await model.boot();
+  runApp(SugarTrackerApp(model: model, pickPhoto: pickMealPhoto));
 }

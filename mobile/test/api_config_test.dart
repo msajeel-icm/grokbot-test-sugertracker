@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:sugar_tracker/src/config/api_config.dart';
+import 'package:sugar_tracker/config/api_config.dart';
 
 void main() {
   test('defaults to the Android emulator host', () {

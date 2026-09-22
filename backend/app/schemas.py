@@ -67,6 +67,7 @@ def user_to_out(user: User, db: Session) -> UserOut:
 
 class MealCreate(BaseModel):
     sugar_g: float = Field(ge=0, le=1000)
+    kcal: float = Field(default=0, ge=0, le=20000)
     label: str = Field(min_length=1, max_length=200)
     local_date: date | None = None
     photo_ref: str | None = Field(default=None, max_length=1024)
@@ -94,6 +95,7 @@ class MealOut(BaseModel):
     id: int
     label: str
     sugar_g: float
+    kcal: float = 0
     logged_at: datetime
     local_date: date
     status: str
@@ -104,16 +106,19 @@ class MealOut(BaseModel):
 class AlternativeOut(BaseModel):
     label: str
     sugar_g: float
+    kcal: float
 
 
 class SuggestionOut(BaseModel):
     fractions: list[str]
     fraction_sugar_g: dict[str, float]
+    fraction_kcal: dict[str, float]
     alternatives: list[AlternativeOut]
 
 
 class AnalyzeOut(BaseModel):
     sugar_g: float
+    kcal: float
     label: str
     confidence: float
     remaining_budget_g: float
@@ -126,6 +131,7 @@ class DashboardOut(BaseModel):
     limit_g: float
     consumed_g: float
     remaining_g: float
+    consumed_kcal: float
     meals: list[MealOut]
     current_streak: int
     best_streak: int

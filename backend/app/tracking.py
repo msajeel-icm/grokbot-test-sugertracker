@@ -62,6 +62,18 @@ def consumed_on(db: Session, user_id: int, local_date: date) -> float:
     return load_daily_totals(db, user_id).get(local_date, 0.0)
 
 
+def consumed_kcal_on(db: Session, user_id: int, local_date: date) -> float:
+    """Day total calories for display. Not used by the sugar limit."""
+    total = db.scalar(
+        select(func.coalesce(func.sum(Meal.kcal), 0.0)).where(
+            Meal.user_id == user_id,
+            Meal.local_date == local_date,
+            Meal.status == MealStatus.logged.value,
+        )
+    )
+    return grams(float(total or 0))
+
+
 def meals_for_date(db: Session, user_id: int, local_date: date) -> list[Meal]:
     return list(
         db.scalars(

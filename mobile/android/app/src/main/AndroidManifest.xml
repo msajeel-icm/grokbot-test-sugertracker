@@ -2,7 +2,7 @@
     <!-- Release builds talk to the local API; debug/profile manifests only cover the tool. -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <application
-        android:label="Sugar Tracker"
+        android:label="Sugar"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:usesCleartextTraffic="true">

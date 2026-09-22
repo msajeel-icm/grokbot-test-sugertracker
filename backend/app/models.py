@@ -74,6 +74,7 @@ class Meal(Base):
     photo_path_or_url: Mapped[str | None] = mapped_column(String(1024), nullable=True)
     label: Mapped[str] = mapped_column(String(200), nullable=False)
     sugar_g: Mapped[float] = mapped_column(Float, nullable=False)
+    kcal: Mapped[float] = mapped_column(Float, nullable=False, default=0.0, server_default="0")
     logged_at: Mapped[datetime] = mapped_column(UtcDateTime(), nullable=False, default=utcnow)
     local_date: Mapped[date] = mapped_column(Date, nullable=False)
     status: Mapped[str] = mapped_column(String(16), nullable=False, default=MealStatus.logged.value)

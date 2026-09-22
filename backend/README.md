@@ -35,11 +35,11 @@ python -m app.seed
 | GET | `/api/v1/me` | Bearer | profile plus `current_streak` and `best_streak` |
 | PATCH | `/api/v1/me` | Bearer | `{daily_sugar_limit_g?, timezone?}` |
 | POST | `/api/v1/meals/analyze` | Bearer | JSON `{"hint"?}` or multipart `image` + optional `hint`. Does not log. |
-| POST | `/api/v1/meals` | Bearer | Confirm a meal: `{sugar_g, label, local_date?, photo_ref?, notes?}` |
-| GET | `/api/v1/meals?date=YYYY-MM-DD` | Bearer | Logged meals for that local date |
-| GET | `/api/v1/dashboard` | Bearer | Today's limit, consumed, remaining, meals, streaks |
+| POST | `/api/v1/meals` | Bearer | Confirm a meal: `{sugar_g, kcal?, label, local_date?, photo_ref?, notes?}`. `kcal` defaults to 0. |
+| GET | `/api/v1/meals?date=YYYY-MM-DD` | Bearer | Logged meals for that local date, including `kcal` |
+| GET | `/api/v1/dashboard` | Bearer | Today's sugar limit, consumed, remaining, `consumed_kcal`, meals, streaks |
 
-`POST /meals/analyze` is a local catalog stub. It never calls a vision or nutrition API. `remaining_budget_g` is the daily limit minus today's logged sugar. `would_exceed` is true when the estimate is greater than that remainder. `suggestion.fraction_sugar_g` is about one third and one half of the estimate. A client `local_date` is stored unchanged; otherwise the date comes from the user's timezone. `logged_at` is always UTC.
+`POST /meals/analyze` is a local catalog stub. It never calls a vision or nutrition API. The response includes `kcal` for the full serving, `suggestion.fraction_kcal` for 1/3 and 1/2, and `kcal` on each alternative. `remaining_budget_g` is the daily limit minus today's logged sugar. `would_exceed` is true when the sugar estimate is greater than that remainder. Calories do not affect either field. A client `local_date` is stored unchanged; otherwise the date comes from the user's timezone. `logged_at` is always UTC. Existing SQLite files gain a `meals.kcal` column on startup.
 
 A streak day is a local date whose logged sugar is strictly under the limit. The current streak is that run ending today, or ending yesterday when today has no meals yet. A day at or over the limit breaks the current streak. `best_streak` keeps the longest run.
 
@@ -62,7 +62,7 @@ curl -s -X POST http://127.0.0.1:8000/api/v1/meals/analyze \
 curl -s -X POST http://127.0.0.1:8000/api/v1/meals \
   -H "Authorization: Bearer TOKEN" \
   -H 'Content-Type: application/json' \
-  -d '{"sugar_g":12,"label":"chocolate chip cookie"}'
+  -d '{"sugar_g":12,"kcal":160,"label":"chocolate chip cookie"}'
 
 curl -s http://127.0.0.1:8000/api/v1/dashboard \
   -H "Authorization: Bearer TOKEN"

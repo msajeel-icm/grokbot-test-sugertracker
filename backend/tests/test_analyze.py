@@ -1,4 +1,4 @@
-from app.analyze import estimate_food, fraction_sugars, low_sugar_alternatives, match_hint
+from app.analyze import estimate_food, fraction_kcals, fraction_sugars, low_sugar_alternatives, match_hint
 
 
 def test_fraction_sugar_is_one_third_and_one_half() -> None:
@@ -8,6 +8,15 @@ def test_fraction_sugar_is_one_third_and_one_half() -> None:
     odd = fraction_sugars(10)
     assert odd["1/3"] == 3.33
     assert odd["1/2"] == 5
+
+
+def test_fraction_kcal_scales_the_same_portions() -> None:
+    portions = fraction_kcals(160)
+    assert portions["1/3"] == 53.33
+    assert portions["1/2"] == 80
+    odd = fraction_kcals(100)
+    assert odd["1/3"] == 33.33
+    assert odd["1/2"] == 50
 
 
 def test_hint_matches_catalog_without_substring_false_positives() -> None:
@@ -26,6 +35,7 @@ def test_same_image_bytes_always_pick_the_same_food() -> None:
     hinted = estimate_food("chocolate chip cookie", b"plate-photo-v1")
     assert hinted.label == "chocolate chip cookie"
     assert hinted.sugar_g == 12
+    assert hinted.kcal == 160
 
 
 def test_unknown_hint_with_image_uses_the_image_hash() -> None:
@@ -38,16 +48,20 @@ def test_empty_input_uses_the_default_snack() -> None:
     food = estimate_food(None, None)
     assert food.label == "mixed snack"
     assert food.sugar_g == 18
+    assert food.kcal == 210
 
 
 def test_alternatives_include_at_least_two_low_sugar_foods() -> None:
     alternatives = low_sugar_alternatives("chocolate chip cookie")
-    labels = [label for label, _sugar in alternatives]
+    labels = [label for label, _sugar, _kcal in alternatives]
     assert len(labels) >= 2
     assert "grilled chicken" in labels
     assert "cucumber" in labels
-    assert all(sugar < 5 for _label, sugar in alternatives)
+    assert all(sugar < 5 for _label, sugar, _kcal in alternatives)
+    by_label = {label: (sugar, kcal) for label, sugar, kcal in alternatives}
+    assert by_label["grilled chicken"] == (0.0, 165.0)
+    assert by_label["cucumber"] == (1.7, 16.0)
 
-    without_chicken = [label for label, _sugar in low_sugar_alternatives("grilled chicken")]
+    without_chicken = [label for label, _sugar, _kcal in low_sugar_alternatives("grilled chicken")]
     assert "grilled chicken" not in without_chicken
     assert len(without_chicken) >= 2

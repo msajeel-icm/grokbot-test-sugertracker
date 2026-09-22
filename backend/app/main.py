@@ -1,9 +1,10 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app import __version__
-from app.database import Base, engine
+from app.database import Base, engine, ensure_meal_kcal_column
 from app.routers import auth, me, meals
 from app.seed import seed_demo_user
 
@@ -11,6 +12,7 @@ from app.seed import seed_demo_user
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     Base.metadata.create_all(bind=engine)
+    ensure_meal_kcal_column()
     seed_demo_user()
     yield
 
@@ -20,6 +22,12 @@ app = FastAPI(
     version=__version__,
     description="Accounts, meals, stub food analysis, dashboard, and streaks.",
     lifespan=lifespan,
+)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 app.include_router(auth.router)
 app.include_router(me.router)

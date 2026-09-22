@@ -8,6 +8,7 @@ from fastapi import APIRouter, HTTPException, Query, Request, status
 from app.analyze import (
     FRACTION_LABELS,
     estimate_food,
+    fraction_kcals,
     fraction_sugars,
     low_sugar_alternatives,
 )
@@ -22,6 +23,7 @@ from app.schemas import (
     SuggestionOut,
 )
 from app.tracking import (
+    consumed_kcal_on,
     consumed_on,
     meal_would_exceed,
     meals_for_date,
@@ -123,14 +125,14 @@ async def _read_analyze_request(request: Request) -> _AnalyzeRequest:
     response_model=AnalyzeOut,
     tags=["meals"],
     openapi_extra=_ANALYZE_OPENAPI,
-    summary="Stub-estimate sugar for a meal without logging it",
+    summary="Stub-estimate sugar and calories for a meal without logging it",
 )
 async def analyze_meal(request: Request, current_user: CurrentUser, db: DbSession) -> AnalyzeOut:
-    """Estimate sugar from an optional image and/or hint.
+    """Estimate sugar and calories from an optional image and/or hint.
 
     This is a local catalog stub. The same image bytes always pick the same
     food. A matching hint wins over the image hash. Nothing is written until
-    `POST /meals`.
+    `POST /meals`. ``would_exceed`` and ``remaining_budget_g`` use sugar only.
     """
     payload = await _read_analyze_request(request)
     estimate = estimate_food(payload.hint, payload.image_bytes)
@@ -138,11 +140,12 @@ async def analyze_meal(request: Request, current_user: CurrentUser, db: DbSessio
     consumed = consumed_on(db, current_user.id, today)
     remaining = remaining_budget_g(current_user.daily_sugar_limit_g, consumed)
     alternatives = [
-        AlternativeOut(label=label, sugar_g=sugar)
-        for label, sugar in low_sugar_alternatives(estimate.label)
+        AlternativeOut(label=label, sugar_g=sugar, kcal=kcal)
+        for label, sugar, kcal in low_sugar_alternatives(estimate.label)
     ]
     return AnalyzeOut(
         sugar_g=estimate.sugar_g,
+        kcal=estimate.kcal,
         label=estimate.label,
         confidence=estimate.confidence,
         remaining_budget_g=remaining,
@@ -150,6 +153,7 @@ async def analyze_meal(request: Request, current_user: CurrentUser, db: DbSessio
         suggestion=SuggestionOut(
             fractions=list(FRACTION_LABELS),
             fraction_sugar_g=fraction_sugars(estimate.sugar_g),
+            fraction_kcal=fraction_kcals(estimate.kcal),
             alternatives=alternatives,
         ),
     )
@@ -164,6 +168,7 @@ def log_meal(body: MealCreate, current_user: CurrentUser, db: DbSession) -> Meal
         photo_path_or_url=body.photo_ref,
         label=body.label,
         sugar_g=body.sugar_g,
+        kcal=body.kcal,
         logged_at=utcnow(),
         local_date=local_date,
         status=MealStatus.logged.value,
@@ -195,6 +200,7 @@ def get_dashboard(current_user: CurrentUser, db: DbSession) -> DashboardOut:
         limit_g=limit_g,
         consumed_g=consumed,
         remaining_g=remaining_budget_g(limit_g, consumed),
+        consumed_kcal=consumed_kcal_on(db, current_user.id, today),
         meals=[MealOut.model_validate(meal) for meal in meals_for_date(db, current_user.id, today)],
         current_streak=current_streak,
         best_streak=best_streak,

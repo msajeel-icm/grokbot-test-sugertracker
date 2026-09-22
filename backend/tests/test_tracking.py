@@ -95,15 +95,15 @@ def test_today_under_limit_extends_the_run() -> None:
 
 
 @pytest.mark.parametrize(
-    ("sugar_g", "third", "half"),
-    [(12, 4, 6), (10, 3.33, 5), (1, 0.33, 0.5)],
+    ("amount", "third", "half"),
+    [(12, 4, 6), (10, 3.33, 5), (1, 0.33, 0.5), (160, 53.33, 80), (165, 55, 82.5)],
 )
-def test_fraction_constants_match_budget_scale(sugar_g: float, third: float, half: float) -> None:
-    # Portion math lives next to the catalog; this guards the same 1/3 and 1/2 factors.
-    from app.analyze import fraction_sugars
+def test_fraction_constants_match_budget_scale(amount: float, third: float, half: float) -> None:
+    # Portion math is shared by sugar and kcal. The sugar limit still uses sugar only.
+    from app.analyze import fraction_kcals, fraction_sugars
 
-    portions = fraction_sugars(sugar_g)
-    assert portions["1/3"] == pytest.approx(third, abs=0.01)
-    assert portions["1/2"] == pytest.approx(half, abs=0.01)
-    assert portions["1/3"] == pytest.approx(sugar_g / 3, abs=0.01)
-    assert portions["1/2"] == pytest.approx(sugar_g / 2, abs=0.01)
+    for portions in (fraction_sugars(amount), fraction_kcals(amount)):
+        assert portions["1/3"] == pytest.approx(third, abs=0.01)
+        assert portions["1/2"] == pytest.approx(half, abs=0.01)
+        assert portions["1/3"] == pytest.approx(amount / 3, abs=0.01)
+        assert portions["1/2"] == pytest.approx(amount / 2, abs=0.01)
