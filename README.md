@@ -105,6 +105,11 @@ backend/
   app/           FastAPI package (auth, meals, analyze stub, dashboard, streaks)
   requirements.txt
   .env.example
+mobile/          Flutter client
 ```
 
-Out of scope: the Flutter client, a real vision model, third-party food APIs, push notifications, social features, and offline sync.
+## Mobile
+
+The Flutter app lives in [`mobile/`](mobile/README.md).
+
+Out of scope: a real vision model, third-party food APIs, push notifications, social features, and offline sync.
